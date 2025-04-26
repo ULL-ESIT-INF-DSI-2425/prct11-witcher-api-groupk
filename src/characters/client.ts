@@ -12,38 +12,38 @@ connect('mongodb://127.0.0.1:27017/witcher-app').then(() => {
  * Interfaz Client. Representa a un cliente.
  */
 export interface ClientInterface extends PersonInterface {
-    race: 'Human' | 'Elf' | 'Dwarf' | 'Wizard'
+  race: 'Human' | 'Elf' | 'Dwarf' | 'Wizard'
 }
 
 const ClientSchema = new Schema<ClientInterface>({
-    name: {
-        type: String,
-        unique: true,
-        required: true,
-        validate: (value: string) => {
-            if (!value.match(/^[A-Z]/)) {
-                throw new Error('El nombre debe comenzar con mayúscula.');
-            } else if (!validator.default.isAlphanumeric(value)) {
-                throw new Error('El nombre solo puede contener caracteres alfanuméricos.');
-            }
-        }
-    },
-    location: {
-        type: String,
-        default: 'Drakenborg',
-        validate: (value: string) => {
-            if (!value.match(/^[A-Z]/)) {
-                throw new Error('La localización debe comenzar con mayúscula.');
-            } else if (!validator.default.isAlphanumeric(value)) {
-                throw new Error('La localización solo puede contener caracteres alfanuméricos.');
-            }
-        }
-    },
-    race: {
-        type: String,
-        default: 'Human',
-        enum: ['Human', 'Elf', 'Dwarf', 'Wizard']
-    }
+	name: {
+		type: String,
+		unique: true,
+		required: true,
+		validate: (value: string) => {
+			if (!value.match(/^[A-Z]/)) {
+				throw new Error('El nombre debe comenzar con mayúscula.');
+			} else if (!validator.default.isAlphanumeric(value)) {
+				throw new Error('El nombre solo puede contener caracteres alfanuméricos.');
+			}
+		}
+	},
+	location: {
+		type: String,
+		default: 'Drakenborg',
+		validate: (value: string) => {
+			if (!value.match(/^[A-Z]/)) {
+				throw new Error('La localización debe comenzar con mayúscula.');
+			} else if (!validator.default.isAlphanumeric(value)) {
+				throw new Error('La localización solo puede contener caracteres alfanuméricos.');
+			}
+		}
+	},
+	race: {
+		type: String,
+		default: 'Human',
+		enum: ['Human', 'Elf', 'Dwarf', 'Wizard']
+	}
 });
 
-const Client = model<ClientInterface>('Client', ClientSchema);
+export const Client = model<ClientInterface>('Client', ClientSchema);

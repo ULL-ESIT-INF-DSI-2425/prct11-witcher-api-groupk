@@ -61,4 +61,4 @@ const GoodSchema = new Schema<GoodInterface>({
     }
 });
 
-const Client = model<GoodInterface>('Client', GoodSchema);
+export const Good = model<GoodInterface>('Client', GoodSchema);

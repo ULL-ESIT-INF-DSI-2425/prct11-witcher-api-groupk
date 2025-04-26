@@ -46,4 +46,4 @@ const MerchantSchema = new Schema<MerchantInterface>({
     }
 });
 
-const Client = model<MerchantInterface>('Merchant', MerchantSchema);
+export const Merchant = model<MerchantInterface>('Merchant', MerchantSchema);
