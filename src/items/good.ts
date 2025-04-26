@@ -35,9 +35,9 @@ const GoodSchema = new Schema<GoodInterface>({
         required: true,
         validate: (value: string) => {
             if (!value.match(/^[A-Z]/)) {
-                throw new Error('La localización debe comenzar con mayúscula.');
+                throw new Error('La descripción debe comenzar con mayúscula.');
             } else if (!validator.default.isAlphanumeric(value)) {
-                throw new Error('La localización solo puede contener caracteres alfanuméricos.');
+                throw new Error('La descripción solo puede contener caracteres alfanuméricos.');
             }
         }
     },
@@ -61,4 +61,4 @@ const GoodSchema = new Schema<GoodInterface>({
     }
 });
 
-export const Good = model<GoodInterface>('Client', GoodSchema);
+export const Good = model<GoodInterface>('Good', GoodSchema);
