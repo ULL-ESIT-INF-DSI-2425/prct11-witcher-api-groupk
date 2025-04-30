@@ -2,74 +2,56 @@ import express from 'express'
 import mongoose from 'mongoose';
 import { Client, ClientInterface } from '../characters/client.js' 
 
-const app = express();
+export const hunterRouter = express.Router();
 
 const port = process.env.PORT || 3000
 
-app.use(express.json());
+hunterRouter.use(express.json());
 
-
-export function getClientByName(name: string): Promise<ClientInterface> {
-  return new Promise((resolve, reject) => {
-    Client.findOne({ name: name })
-    .then((client) => {
-      if (client) resolve(client.toObject());
-    })
-    .catch((err) => {
-      reject(err);
-    });
-  });
-}
-
-export function getClientByID(identifier: string): Promise<ClientInterface> {
-  return new Promise((resolve, reject) => {
-    if (!mongoose.Types.ObjectId.isValid(identifier)) return reject(new Error('Invalid ID format'));
-    
-    Client.findById(identifier)
-    .then((client) => {
-      if (client) resolve(client.toObject());
-    })
-    .catch((err) => {
-      reject(err);
-    });
-  });
-}
-
-app.post('/hunters', (req, res) => {
+hunterRouter.post('/hunters', async (req, res) => {
   const client = new Client(req.body);
 
-  client.save().then((client) => {
+  try {
+    await client.save();
     res.status(201).send(client);
-  }).catch((error) => {
-    res.status(400).send(error);
-  });
+  } catch (err) {
+    res.status(400).send(err);
+  }
 }); 
 
-app.get('/hunters', (req, res) => {
+hunterRouter.get('/hunters', async (req, res) => {
   const name = req.query.name as string;
 
-  getClientByName(name)
-  .then((client) => {
-    if (client) res.status(201).send(client);
-  })
-  .catch((err) => {
-    res.status(400).send(err);
-  });
+  try {
+    const client = await Client.findOne({ name: name })
+
+    if (client) {
+      res.send(client);
+    } else {
+      res.status(404).send();
+    }
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
-app.get('/hunters/:id', (req, res) => {
+hunterRouter.get('/hunters/:id', async (req, res) => {
   const id = req.params.id;
 
-  getClientByID(id)
-  .then((client) => {
-    if (client) res.status(201).send(client);
-  })
-  .catch((err) => {
-    res.status(400).send(err);
-  });
+  try {
+    const client = await Client.findById(req.params.id);
+  
+    if (client) {
+      res.send(client);
+    } else {
+      res.status(404).send();
+    }
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
-app.patch('/hunters', (req, res) => {
+hunterRouter.patch('/hunters', async (req, res) => {
   if (!req.query.name) {
     res.status(400).send({
       error: 'A name must be provided in the query string',
@@ -89,23 +71,25 @@ app.patch('/hunters', (req, res) => {
         error: 'Update is not permitted',
       });
     } else {
-      Client.findOneAndUpdate({name: req.query.name.toString()}, req.body, {
-        new: true,
-        runValidators: true,
-      }).then((client) => {
+      try {
+        const client = await Client.findOneAndUpdate({name: req.query.name.toString()}, req.body, {
+          new: true,
+          runValidators: true,
+        });
+
         if (!client) {
           res.status(404).send();
         } else {
           res.send(client);
         }
-      }).catch((error) => {
-        res.status(400).send(error);
-      });
+      } catch (err) {
+        res.status(500).send(err);
+      }
     }
   }
 });
 
-app.patch('/hunters/:id', (req, res) => {
+hunterRouter.patch('/hunters/:id', async (req, res) => {
   if (!req.body) {
     res.status(400).send({
       error: 'Fields to be modified have to be provided in the request body',
@@ -121,50 +105,54 @@ app.patch('/hunters/:id', (req, res) => {
         error: 'Update is not permitted',
       });
     } else {
-      Client.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-      }).then((client) => {
+      try {
+        const client = await Client.findByIdAndUpdate(req.params.id, req.body, {
+          new: true,
+          runValidators: true,
+        });
+
         if (!client) {
           res.status(404).send();
         } else {
           res.send(client);
         }
-      }).catch((error) => {
-        res.status(400).send(error);
-      });
+      } catch (err) {
+        res.status(500).send(err);
+      }
     }
   }
 });
 
-app.delete('/hunters', (req, res) => {
+hunterRouter.delete('/hunters', async (req, res) => {
   if (!req.query.name) {
     res.status(400).send({
       error: 'A name must be provided',
     })
   } else {
-    Client.findOneAndDelete({name: req.query.name.toString()}).then((client) => {
-      if (!Client) {
+    try {
+      const client = await Client.findOneAndDelete({name: req.query.name.toString()});
+
+      if (!client) {
         res.status(404).send();
       } else {
-        res.send(client)
+        res.send(client);
       }
-    })
+    } catch (err) {
+      res.status(500).send(err);
+    }
   }
 });
 
-app.delete('/hunters/:id', (req, res) => {
-  Client.findByIdAndDelete(req.params.id).then((client) => {
+hunterRouter.delete('/hunters/:id', async (req, res) => {
+  try {
+    const client = await Client.findByIdAndDelete(req.params.id);
+
     if (!client) {
       res.status(404).send();
     } else {
       res.send(client);
     }
-  }).catch(() => {
-    res.status(400).send();
-  });
-});
-
-app.listen(port, () => {
-  console.log(`Server is up on port ${port}`);
+  } catch (err) {
+    res.status(500).send();
+  }
 });

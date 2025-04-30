@@ -1,75 +1,53 @@
 import express from 'express'
 import mongoose from 'mongoose';
-import { Merchant, MerchantInterface } from '../characters/merchant.js' 
+import { Merchant } from '../characters/merchant.js' 
 
-const app = express();
+export const merchantRouter = express.Router();
 
 const port = process.env.PORT || 3000
 
-app.use(express.json());
+merchantRouter.use(express.json());
 
-
-export function getMerchantByName(name: string): Promise<MerchantInterface> {
-  return new Promise((resolve, reject) => {
-    Merchant.findOne({ name: name })
-    .then((merchant) => {
-      if (merchant) resolve(merchant.toObject());
-    })
-    .catch((err) => {
-      reject(err);
-    });
-  });
-}
-
-export function getMerchantByID(identifier: string): Promise<MerchantInterface> {
-  return new Promise((resolve, reject) => {
-    if (!mongoose.Types.ObjectId.isValid(identifier)) return reject(new Error('Invalid ID format'));
-    
-    Merchant.findById(identifier)
-    .then((merchant) => {
-      if (merchant) resolve(merchant.toObject());
-    })
-    .catch((err) => {
-      reject(err);
-    });
-  });
-}
-
-app.post('/merchants', (req, res) => {
+merchantRouter.post('/merchants', async (req, res) => {
   const merchant = new Merchant(req.body);
 
-  merchant.save().then((merchant) => {
+  try {
+    await merchant.save();
     res.status(201).send(merchant);
-  }).catch((error) => {
-    res.status(400).send(error);
-  });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 }); 
 
-app.get('/merchants', (req, res) => {
+merchantRouter.get('/merchants', async (req, res) => {
   const name = req.query.name as string;
 
-  getMerchantByName(name)
-  .then((merchant) => {
-    if (merchant) res.status(201).send(merchant);
-  })
-  .catch((err) => {
-    res.status(400).send(err);
-  });
+  try {
+    const merchant = await Merchant.findOne({ name: name });
+    if (merchant) {
+      res.send(merchant);
+    } else {
+      res.status(404).send();
+    }
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
-app.get('/merchants/:id', (req, res) => {
-  const id = req.params.id;
-
-  getMerchantByID(id)
-  .then((merchant) => {
-    if (merchant) res.status(201).send(merchant);
-  })
-  .catch((err) => {
-    res.status(400).send(err);
-  });
+merchantRouter.get('/merchants/:id', async (req, res) => {
+    try {
+      const merchant = await Merchant.findById(req.params.id);
+      if (merchant) {
+        res.send(merchant);
+      } else {
+        res.status(404).send();
+      }
+    } catch (err) {
+      res.status(500).send(err);
+    }
 });
 
-app.patch('/merchants', (req, res) => {
+merchantRouter.patch('/merchants', async (req, res) => {
   if (!req.query.name) {
     res.status(400).send({
       error: 'A name must be provided in the query string',
@@ -89,23 +67,25 @@ app.patch('/merchants', (req, res) => {
         error: 'Update is not permitted',
       });
     } else {
-      Merchant.findOneAndUpdate({name: req.query.name.toString()}, req.body, {
-        new: true,
-        runValidators: true,
-      }).then((merchant) => {
+      try {
+        const merchant = await Merchant.findOneAndUpdate({name: req.query.name.toString()}, req.body, {
+          new: true,
+          runValidators: true,
+        });
+
         if (!merchant) {
           res.status(404).send();
         } else {
           res.send(merchant);
         }
-      }).catch((error) => {
-        res.status(400).send(error);
-      });
+      } catch (err) {
+        res.status(500).send(err);
+      }
     }
   }
 });
 
-app.patch('/merchants/:id', (req, res) => {
+merchantRouter.patch('/merchants/:id', async (req, res) => {
   if (!req.body) {
     res.status(400).send({
       error: 'Fields to be modified have to be provided in the request body',
@@ -121,50 +101,54 @@ app.patch('/merchants/:id', (req, res) => {
         error: 'Update is not permitted',
       });
     } else {
-      Merchant.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-      }).then((merchant) => {
+      try {
+        const merchant = await Merchant.findByIdAndUpdate(req.params.id, req.body, {
+          new: true,
+          runValidators: true,
+        });
+
         if (!merchant) {
           res.status(404).send();
         } else {
           res.send(merchant);
         }
-      }).catch((error) => {
-        res.status(400).send(error);
-      });
+      } catch (err) {
+        res.status(500).send(err);
+      }
     }
   }
 });
 
-app.delete('/merchants', (req, res) => {
+merchantRouter.delete('/merchants', async (req, res) => {
   if (!req.query.name) {
     res.status(400).send({
       error: 'A name must be provided',
     })
   } else {
-    Merchant.findOneAndDelete({name: req.query.name.toString()}).then((merchant) => {
+    try {
+      const merchant = await Merchant.findOneAndDelete({name: req.query.name.toString()});
+
       if (!merchant) {
         res.status(404).send();
       } else {
-        res.send(merchant)
+        res.send(merchant);
       }
-    })
+    } catch (err) {
+      res.status(500).send(err);
+    }
   }
 });
 
-app.delete('/merchants/:id', (req, res) => {
-  Merchant.findByIdAndDelete(req.params.id).then((merchant) => {
+merchantRouter.delete('/merchants/:id', async (req, res) => {
+  try {
+    const merchant = await Merchant.findByIdAndDelete(req.params.id);
+
     if (!merchant) {
       res.status(404).send();
     } else {
       res.send(merchant);
     }
-  }).catch(() => {
-    res.status(400).send();
-  });
-});
-
-app.listen(port, () => {
-  console.log(`Server is up on port ${port}`);
+  } catch (err) {
+    res.status(500).send();
+  }
 });
