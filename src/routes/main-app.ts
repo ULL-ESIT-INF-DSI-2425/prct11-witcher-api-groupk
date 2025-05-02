@@ -6,6 +6,7 @@ import { Good } from '../items/good.js';
 import * as InitItems from '../items/init-items.js';
 import { Client } from '../characters/client.js';
 import { Merchant } from '../characters/merchant.js';
+import { transactionRouter } from './transactions-route.js';
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(goodRouter);
 app.use(hunterRouter);
 app.use(merchantRouter);
+app.use(transactionRouter);
 
 const port = process.env.PORT || 3000;
 
