@@ -1,5 +1,5 @@
 import { Schema, connect, model } from "mongoose";
-import { GoodInterface } from "./good.js";
+import { Good, GoodInterface } from "./good.js";
 
 connect('mongodb://127.0.0.1:27017/witcher-app').then(() => {
   console.log('Connected to the database');
@@ -34,4 +34,3 @@ const StockSchema = new Schema<StockInterface>({
 });
 
 export const Stock = model<StockInterface>('Stock', StockSchema);
-

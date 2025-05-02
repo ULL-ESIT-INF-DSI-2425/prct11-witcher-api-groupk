@@ -25,7 +25,7 @@ merchantRouter.get('/merchants', async (req, res) => {
   try {
     const merchant = await Merchant.find({ name: name });
     
-    if (merchant) {
+    if (merchant.length > 0) {
       res.send(merchant);
     } else {
       res.status(404).send();

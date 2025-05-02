@@ -25,10 +25,10 @@ hunterRouter.get('/hunters', async (req, res) => {
   try {
     const client = await Client.find({ name: name });
 
-    if (client) {
-      res.send(client);
-    } else {
+    if (client.length === 0) {
       res.status(404).send();
+    } else {
+      res.send(client);
     }
   } catch (err) {
     res.status(500).send(err);
