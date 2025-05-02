@@ -1,6 +1,11 @@
-import { Schema, model } from "mongoose";
+import { Schema, connect, model } from "mongoose";
 import { GoodInterface } from "./good.js";
-import validator from "validator";
+
+connect('mongodb://127.0.0.1:27017/witcher-app').then(() => {
+  console.log('Connected to the database');
+}).catch(() => {
+  console.log('Something went wrong when conecting to the database');
+});
 
 /**
  * Interfaz StockInterface. Representa al stock de la posada.
@@ -14,6 +19,7 @@ const StockSchema = new Schema<StockInterface>({
     good: {
         type: Schema.Types.ObjectId,
         required: true,
+        unique: true,
         ref: 'Good'
     },
     quantity: {
@@ -28,3 +34,4 @@ const StockSchema = new Schema<StockInterface>({
 });
 
 export const Stock = model<StockInterface>('Stock', StockSchema);
+

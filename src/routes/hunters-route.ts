@@ -23,7 +23,7 @@ hunterRouter.get('/hunters', async (req, res) => {
   const name = req.query.name as string;
 
   try {
-    const client = await Client.findOne({ name: name })
+    const client = await Client.find({ name: name });
 
     if (client) {
       res.send(client);

@@ -20,6 +20,7 @@ const ClientSchema = new Schema<ClientInterface>({
 		type: String,
 		unique: true,
 		required: true,
+		trim: true,
 		validate: (value: string) => {
 			if (!value.match(/^[A-Z]/)) {
 				throw new Error('El nombre debe comenzar con mayúscula.');
@@ -30,6 +31,7 @@ const ClientSchema = new Schema<ClientInterface>({
 	},
 	location: {
 		type: String,
+		trim: true,
 		default: 'Drakenborg',
 		validate: (value: string) => {
 			if (!value.match(/^[A-Z]/)) {

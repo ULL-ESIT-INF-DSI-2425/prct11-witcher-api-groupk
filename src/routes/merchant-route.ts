@@ -23,7 +23,8 @@ merchantRouter.get('/merchants', async (req, res) => {
   const name = req.query.name as string;
 
   try {
-    const merchant = await Merchant.findOne({ name: name });
+    const merchant = await Merchant.find({ name: name });
+    
     if (merchant) {
       res.send(merchant);
     } else {

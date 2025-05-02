@@ -23,6 +23,7 @@ const GoodSchema = new Schema<GoodInterface>({
         type: String,
         unique: true,
         required: true,
+        trim: true,
         validate: (value: string) => {
             if (!value.match(/^[A-Z]/)) {
                 throw new Error('El nombre debe comenzar con mayúscula.');
@@ -34,6 +35,7 @@ const GoodSchema = new Schema<GoodInterface>({
     description: {
         type: String,
         required: true,
+        trim: true,
         validate: (value: string) => {
             if (!value.match(/^[A-Z]/)) {
                 throw new Error('La descripción debe comenzar con mayúscula.');
