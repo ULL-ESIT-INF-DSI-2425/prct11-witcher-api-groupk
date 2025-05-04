@@ -8,11 +8,11 @@ import validator from "validator";
 export interface TransactionInterface extends Document {
     merchant: Schema.Types.ObjectId,
     client: Schema.Types.ObjectId,
-    type: 'Purchase' | 'Refund',
     goods: Schema.Types.ObjectId[],
     quantities: number[],
     crowns: number,
-    date: string
+    date: string,
+    time: string
 }
 
 const TransactionSchema = new Schema<TransactionInterface>({
@@ -23,11 +23,6 @@ const TransactionSchema = new Schema<TransactionInterface>({
     client: {
         type: Schema.Types.ObjectId,
         ref: 'Client'
-    },
-    type: {
-        type: String,
-        default: 'Purchase',
-        enum: ['Purchase', 'Refund']
     },
     goods: {
         type: [Schema.Types.ObjectId],
@@ -67,7 +62,16 @@ const TransactionSchema = new Schema<TransactionInterface>({
                 throw new Error('La fecha introducidad no tiene el formato correcto.')
             }
         }
+    },
+    time: {
+        type: String,
+        required: true,
+        validate: (value: string) => {
+            if (!validator.default.isTime(value)) {
+                throw new Error('La fecha introducidad no tiene el formato correcto.')
+            }
+        }
     }
 });
 
-export const Transaction = model<TransactionInterface>('BuyTransaction', TransactionSchema);
+export const Transaction = model<TransactionInterface>('Transaction', TransactionSchema);
