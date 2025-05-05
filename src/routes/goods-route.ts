@@ -34,7 +34,7 @@ goodRouter.get('/goods', async (req, res) => {
     if (goods.length > 0) {
       res.status(200).send(goods);
     } else {
-      res.status(404).send({ error: 'No goods found matching the criteria' });
+      res.status(404).send({ error: 'Bien no encontrado.' });
     }
   } catch (err) {
     res.status(500).send(err);
@@ -48,7 +48,7 @@ goodRouter.get('/goods/:id', async (req, res) => {
       if (good) {
         res.send(good);
       } else {
-        res.status(404).send();
+        res.status(404).send({ error: 'Bien no encontrado.' });
       }
   } catch (err) {
     res.status(500).send(err);

@@ -189,7 +189,7 @@ transactionRouter.get('/transactions', async (req, res) => {
             res.status(500).send(err);
         }
     } else if (req.query.iniDate && req.query.finDate && req.query.iniTime && req.query.finTime) {
-        if (req.query.iniTime <= req.query.finTime && req.query.iniTime <= req.query.finTime) {
+        if (req.query.iniTime <= req.query.finTime || (req.query.iniTime === req.query.finTime && req.query.iniTime <= req.query.finTime)) {
             try {
                 const transactions = await Transaction.find({});
 
@@ -219,5 +219,75 @@ transactionRouter.get('/transactions', async (req, res) => {
         }
     } else {
         res.status(400).send({ error: 'Para buscar por fecha, es necesario que se introduzca fecha inicial y final y hora inicial y final.' });
+    }
+});
+
+transactionRouter.get('/transactions/:id', async (req, res) => {
+    try {
+        const transaction = await Transaction.findById(req.params.id);
+
+        if (transaction) {
+            res.send(transaction);
+        } else {
+            res.status(404).send({ error: 'Transacción no encontrada.' });
+        }
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+transactionRouter.patch('/transactions/:id', async (req, res) => {
+    try {
+        const transaction = await Transaction.findById(req.params.id);
+        const newQuantities = [];
+
+        if (transaction) {
+            if (transaction.toObject().client) {
+                
+            } else {
+                
+            }
+        } else {
+            res.status(404).send({ error: 'Transacción no encontrada.' });
+        }
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+transactionRouter.delete('/transactions/:id', async (req, res) => {
+    try {
+        const transaction = await Transaction.findById(req.params.id);
+        const newQuantities = [];
+
+        if (transaction) {
+            if (transaction.toObject().client) {
+                for (let i: number = 0; i < transaction.toObject().goods.length; i++) {
+                    const stock = await Stock.findOne({ good: transaction.toObject().goods[i] });
+                    const newQuantity = Number(stock!.toObject().quantity) + Number(transaction.toObject().quantities[i]);
+                    stock!.updateOne({ quantity: newQuantity });
+                }
+            } else {
+                for (let i: number = 0; i < transaction.toObject().goods.length; i++) {
+                    const stock = await Stock.findOne({ good: transaction.toObject().goods[i] });
+                    const newQuantity = Number(stock!.toObject().quantity) - Number(transaction.toObject().quantities[i]);
+
+                    if (newQuantity < 0) {
+                        res.status(400).send({ error: 'La posada no cuenta con suficientes bienes para hacer la devolución.' });
+                        return;
+                    }
+
+                    newQuantities.push(newQuantity);
+                }
+
+                for (let i: number = 0; i < transaction.toObject().goods.length; i++) {
+                    const stock = await Stock.findOneAndUpdate({ good: transaction.toObject().goods[i] }, { quantity: newQuantities[i] }, { runValidators: true });
+                }
+            }
+        } else {
+            res.status(404).send({ error: 'Transacción no encontrada.' });
+        }
+    } catch (err) {
+        res.status(500).send(err);
     }
 });

@@ -27,7 +27,7 @@ merchantRouter.get('/merchants', async (req, res) => {
     if (merchant.length > 0) {
       res.send(merchant);
     } else {
-      res.status(404).send();
+      res.status(404).send({ error: 'Mercader no encontrado.' });
     }
   } catch (err) {
     res.status(500).send(err);
@@ -40,7 +40,7 @@ merchantRouter.get('/merchants/:id', async (req, res) => {
       if (merchant) {
         res.send(merchant);
       } else {
-        res.status(404).send();
+        res.status(404).send({ error: 'Mercader no encontrado.' });
       }
     } catch (err) {
       res.status(500).send(err);

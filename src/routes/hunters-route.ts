@@ -26,7 +26,7 @@ hunterRouter.get('/hunters', async (req, res) => {
     const client = await Client.find({ name: name });
 
     if (client.length === 0) {
-      res.status(404).send();
+      res.status(404).send({ error: 'Cliente no encontrado.' });
     } else {
       res.send(client);
     }
@@ -44,7 +44,7 @@ hunterRouter.get('/hunters/:id', async (req, res) => {
     if (client) {
       res.send(client);
     } else {
-      res.status(404).send();
+      res.status(404).send({ error: 'Cliente no encontrado.' });
     }
   } catch (err) {
     res.status(500).send(err);
