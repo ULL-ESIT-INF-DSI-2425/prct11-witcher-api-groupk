@@ -8,7 +8,7 @@ import { Client } from '../characters/client.js';
 import { Merchant } from '../characters/merchant.js';
 import { transactionRouter } from './transactions-route.js';
 
-const app = express();
+export const app = express();
 
 app.use(express.json());
 app.use(goodRouter);
