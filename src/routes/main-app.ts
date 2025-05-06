@@ -1,4 +1,5 @@
 import express from 'express';
+import '../db/mongoose.js';
 import { goodRouter } from './goods-route.js';
 import { hunterRouter } from './hunters-route.js';
 import { merchantRouter } from './merchant-route.js';

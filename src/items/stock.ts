@@ -1,12 +1,6 @@
 import { Schema, connect, model } from "mongoose";
 import { Good, GoodInterface } from "./good.js";
 
-connect('mongodb://127.0.0.1:27017/witcher-app').then(() => {
-  console.log('Connected to the database');
-}).catch(() => {
-  console.log('Something went wrong when conecting to the database');
-});
-
 /**
  * Interfaz StockInterface. Representa al stock de la posada.
  */
