@@ -116,16 +116,20 @@ transactionRouter.post('/transactions', async (req, res) => {
     
                 for (let i: number = 0; i < req.body.goods.length; i++) {
                     if (req.body.merchant) {
-                        if (indexes.includes(i)) {
-                            const newGood = new Stock({ good: req.body.goods[i], quantity: Number(req.body.quantities[i]) });
-                            await newGood.save();
-                        } else {
-                            const goodToIncrease = await Stock.findOneAndUpdate({ good: req.body.goods[i] }, { quantity: updates[i] }, { runValidators: true });
-                        }
+                      await Stock.findOneAndUpdate(
+                        { good: req.body.goods[i] },
+                        { $inc: { quantity: Number(req.body.quantities[i]) } },
+                        { upsert: true, new: true, runValidators: true }
+                      );
                     } else {
-                        const goodToDecrease = await Stock.findOneAndUpdate({ good: req.body.goods[i] }, { quantity: updates[i] }, { runValidators: true });
+                      const goodToDecrease = await Stock.findOneAndUpdate(
+                        { good: req.body.goods[i] },
+                        { $inc: { quantity: -Number(req.body.quantities[i]) } },
+                        { runValidators: true }
+                      );
                     }
-                }
+                  }
+                  
             } catch (err) {
                 res.status(500).send(err);
             }
@@ -222,6 +226,7 @@ transactionRouter.get('/transactions', async (req, res) => {
     }
 });
 
+
 transactionRouter.get('/transactions/:id', async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
@@ -236,58 +241,173 @@ transactionRouter.get('/transactions/:id', async (req, res) => {
     }
 });
 
-transactionRouter.patch('/transactions/:id', async (req, res) => {
-    try {
-        const transaction = await Transaction.findById(req.params.id);
-        const newQuantities = [];
 
-        if (transaction) {
-            if (transaction.toObject().client) {
-                
-            } else {
-                
-            }
+transactionRouter.patch("/transactions/:id", async (req, res) => {
+    try {
+      const allowedUpdates = ["goods"];
+      const actualUpdates = Object.keys(req.body);
+      const isValidUpdate = actualUpdates.every((update) =>
+        allowedUpdates.includes(update)
+      );
+  
+      if (!isValidUpdate) {
+        res.status(400).send({ error: "Solo se permite actualizar los bienes de la transacción." });
+        return;
+      }
+  
+      const updatedGoods = req.body.goods;
+  
+      if (!Array.isArray(updatedGoods) || updatedGoods.length === 0) {
+        res.status(400).send({ error: "Se requiere una lista de bienes válida." });
+        return;
+      }
+  
+      const transaction = await Transaction.findById(req.params.id);
+  
+      if (!transaction) {
+        res.status(404).send({ error: "Transacción no encontrada." });
+        return;
+      }
+  
+      const isClient = !!transaction.client; 
+      const stockMap: Map<string, number> = new Map();
+  
+      
+      for (let i = 0; i < transaction.goods.length; i++) {
+        const goodId = transaction.goods[i].toString();
+        const qty = transaction.quantities[i];
+  
+        const stock = await Stock.findOne({ good: goodId });
+        if (!stock) continue;
+  
+        const currentQty = stockMap.get(goodId) ?? stock.quantity;
+  
+        if (isClient) {
+          stockMap.set(goodId, currentQty + qty); 
         } else {
-            res.status(404).send({ error: 'Transacción no encontrada.' });
+          const result = currentQty - qty;      
+          if (result < 1) {
+            res.status(400).send({ error: `Al revertir, el stock del bien ${goodId} quedaría menor que 1.` });
+            return;
+          }
+          stockMap.set(goodId, result);
         }
-    } catch (err) {
-        res.status(500).send(err);
+      }
+  
+      for (const item of updatedGoods) {
+        const stock = await Stock.findOne({ good: item.good });
+  
+        if (!stock) {
+          res.status(404).send({ error: `No se encontró el bien ${item.good}` });
+          return;
+        }
+  
+        const currentQty = stockMap.get(item.good) ?? stock.quantity;
+        const result = isClient ? currentQty - item.quantity : currentQty + item.quantity;
+  
+        if (result < 1) {
+          res.status(400).send({ error: `El stock del bien ${item.good} quedaría menor que 1 tras el cambio.` });
+          return;
+        }
+  
+        stockMap.set(item.good, result);
+      }
+  
+      for (const [goodId, finalQty] of stockMap.entries()) {
+        await Stock.findOneAndUpdate(
+          { good: goodId },
+          { quantity: finalQty },
+          { new: true, runValidators: true }
+        );
+      }
+  
+      const updatedTransaction = await Transaction.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          goods: updatedGoods.map((item: any) => item.good),
+          quantities: updatedGoods.map((item: any) => item.quantity),
+        },
+        { new: true, runValidators: true }
+      ).populate({
+        path: isClient ? "client" : "merchant",
+        select: ["name"],
+      });
+  
+      if (updatedTransaction) {
+        res.send(updatedTransaction);
+      } else {
+        res.status(404).send();
+      }
+    } catch (error) {
+      res.status(500).send(error);
     }
-});
+  });
 
 transactionRouter.delete('/transactions/:id', async (req, res) => {
-    try {
-        const transaction = await Transaction.findById(req.params.id);
-        const newQuantities = [];
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+    const newQuantities = [];
+    let continued = false;
+    let newQuantity;
 
-        if (transaction) {
-            if (transaction.toObject().client) {
-                for (let i: number = 0; i < transaction.toObject().goods.length; i++) {
-                    const stock = await Stock.findOne({ good: transaction.toObject().goods[i] });
-                    const newQuantity = Number(stock!.toObject().quantity) + Number(transaction.toObject().quantities[i]);
-                    stock!.updateOne({ quantity: newQuantity });
-                }
-            } else {
-                for (let i: number = 0; i < transaction.toObject().goods.length; i++) {
-                    const stock = await Stock.findOne({ good: transaction.toObject().goods[i] });
-                    const newQuantity = Number(stock!.toObject().quantity) - Number(transaction.toObject().quantities[i]);
-
-                    if (newQuantity < 0) {
-                        res.status(400).send({ error: 'La posada no cuenta con suficientes bienes para hacer la devolución.' });
-                        return;
-                    }
-
-                    newQuantities.push(newQuantity);
-                }
-
-                for (let i: number = 0; i < transaction.toObject().goods.length; i++) {
-                    const stock = await Stock.findOneAndUpdate({ good: transaction.toObject().goods[i] }, { quantity: newQuantities[i] }, { runValidators: true });
-                }
-            }
-        } else {
-            res.status(404).send({ error: 'Transacción no encontrada.' });
-        }
-    } catch (err) {
-        res.status(500).send(err);
+    if (!transaction) {
+      res.status(404).send({ error: 'Transacción no encontrada.' });
+      return;
     }
+
+    const tx = transaction.toObject();
+    const goods = tx.goods;
+    const quantities = tx.quantities;
+    const isClient = !!tx.client;
+
+    for (let i = 0; i < goods.length; i++) {
+      if (continued) {
+        continued = false;
+        continue;
+      }
+
+      const stock = await Stock.findOne({ good: goods[i] });
+      if (!stock) continue;
+
+      const allQuantity = stock.quantity;
+      const quantity = quantities[i];
+
+      if (isClient) {
+        newQuantity = allQuantity + quantity;
+      } else {
+        newQuantity = allQuantity - quantity;
+      }
+
+      if (newQuantity < 0) {
+        res.status(400).send({
+          error: `Stock insuficiente para bien ${goods[i]}`,
+        });
+        return;
+      }
+
+      const currentId = goods[i]?.toString();
+      const nextId = goods[i + 1]?.toString();
+
+      if (currentId === nextId) {
+        newQuantity += isClient ? quantities[i + 1] : -quantities[i + 1];
+        continued = true;
+      }
+
+      newQuantities.push({ good: goods[i], quantity: newQuantity });
+    }
+
+    for (const item of newQuantities) {
+      await Stock.findOneAndUpdate(
+        { good: item.good },
+        { quantity: item.quantity },
+        { runValidators: true }
+      );
+    }
+
+    await Transaction.findByIdAndDelete(req.params.id);
+    res.send(transaction);
+
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });

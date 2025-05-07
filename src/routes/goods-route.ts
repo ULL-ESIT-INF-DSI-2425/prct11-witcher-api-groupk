@@ -1,6 +1,7 @@
 import express from 'express'
 import mongoose from 'mongoose';
 import { Good } from '../items/good.js' 
+import { ReturnDocument } from 'mongodb';
 
 export const goodRouter = express.Router();
 
@@ -73,7 +74,7 @@ goodRouter.patch('/goods', async (req, res) => {
       error: 'Fields to be modified have to be provided in the request body',
     });
   } else {
-    const allowedUpdates = ['name', 'description', 'weight', 'crowns'];
+    const allowedUpdates = ['name', 'description', 'materials','weight', 'crowns'];
     const actualUpdates = Object.keys(req.body);
     const isValidUpdate =
       actualUpdates.every((update) => allowedUpdates.includes(update));
@@ -107,7 +108,7 @@ goodRouter.patch('/goods/:id', async (req, res) => {
       error: 'Fields to be modified have to be provided in the request body',
     });
   } else {
-    const allowedUpdates = ['name', 'description', 'weight', 'crowns'];
+    const allowedUpdates = ['name', 'description','materials', 'weight', 'crowns'];
     const actualUpdates = Object.keys(req.body);
     const isValidUpdate =
         actualUpdates.every((update) => allowedUpdates.includes(update));
@@ -152,7 +153,7 @@ goodRouter.delete('/goods', async (req, res) => {
     try {
       const good = await Good.findOneAndDelete(filter);
       if (!good) {
-        res.send(404).send();
+        res.status(404).send();
       } else {
         res.send(good);
       }

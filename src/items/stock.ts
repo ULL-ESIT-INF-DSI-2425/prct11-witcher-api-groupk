@@ -13,7 +13,6 @@ const StockSchema = new Schema<StockInterface>({
     good: {
         type: Schema.Types.ObjectId,
         required: true,
-        unique: true,
         ref: 'Good'
     },
     quantity: {
