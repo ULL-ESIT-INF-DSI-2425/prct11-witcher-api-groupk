@@ -1,11 +1,11 @@
-import { beforeAll, describe, test, expect } from "vitest";
+import { beforeAll, beforeEach, describe, test, expect } from "vitest";
 import request from 'supertest';
 import { app } from "../src/routes/main-app.js";
 import { Transaction } from "../src/transactions/transaction.js";
 import { Stock } from "../src/items/stock.js";
 
 beforeAll(async () => {
-    await Transaction.deleteMany({ name: 'Prueba' });
+    await Transaction.deleteMany();
 });
 
 describe('/transactions', () => {
@@ -13,7 +13,7 @@ describe('/transactions', () => {
     let goodId: string;
   
     beforeAll(async () => {
-      await request(app)
+      const goodRes = await request(app)
         .post('/goods')
         .send({
           name: 'PocionPrueba',
@@ -54,23 +54,13 @@ describe('/transactions', () => {
         })
         .expect(201);
 
-      const goodRes = await request(app)
-    .post('/goods')
-    .send({
-      name: 'PocionPrueba',
-      description: 'Testing',
-      materials: ['Materia'],
-      weight: 1,
-      crowns: 10
-    })
-    .expect(201);
-
     goodId = goodRes.body._id;
 
     await Stock.create({
       good: goodId,
       quantity: 10
     });
+  })
     
   
     // test('Crea transacción de cliente correctamente', async () => {
@@ -96,6 +86,7 @@ describe('/transactions', () => {
       await request(app)
         .post('/transactions')
         .send({
+          client: 'Geralt',
           merchant: 'Gilberto',
           goods: ['PocionPrueba'],
           quantities: [1],
@@ -130,5 +121,4 @@ describe('/transactions', () => {
   describe('DELETE /transactions', () => {
       
   });
-});
 });
