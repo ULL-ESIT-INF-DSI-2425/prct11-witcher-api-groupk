@@ -3,6 +3,7 @@ import request from 'supertest';
 import { app } from "../src/routes/main-app.js";
 import { Transaction } from "../src/transactions/transaction.js";
 import { Stock } from "../src/items/stock.js";
+import { Client } from "../src/characters/client.js";
 
 beforeAll(async () => {
     await Transaction.deleteMany();
@@ -63,24 +64,25 @@ describe('/transactions', () => {
   })
     
   
-    // test('Crea transacción de cliente correctamente', async () => {
-    //   const res = await request(app)
-    //   .post('/transactions')
-    //   .send({
-    //     merchant: 'Gilberto',
-    //     goods: ['PocionPrueba'],
-    //     quantities: [2],
-    //     date: '2025-05-06',
-    //     time: '10:30'
-    //   })
-    //   .expect(201);
+    test('Crea transacción de cliente correctamente', async () => {
+      const res = await request(app)
+       .post('/transactions')
+       .send({
+         merchant: 'Gilberto',
+         goods: ['PocionPrueba'],
+         quantities: [2],
+         date: '2025-05-06',
+         time: '10:30'
+       })
+       .expect(201);
   
-    //   // expect(res.body).toHaveProperty('_id');
-    //   // expect(res.body.client.name).toBe('Geralt');
-    //   // expect(res.body.goods[0].name).toBe('PocionPrueba');
-    //   // expect(res.body.quantities[0]).toBe(2);
-    //   // expect(res.body.crowns).toBe(20);
-    // });
+        expect(res.body).toHaveProperty('_id');
+        const clientName = Client.findOne()
+        expect(res.body.client.name).toBe('Geralt');
+        expect(res.body.goods[0].name).toBe('PocionPrueba');
+        expect(res.body.quantities[0]).toBe(2);
+        expect(res.body.crowns).toBe(20);
+    });
   
     test('Devuelve error si se indican merchant y client a la vez', async () => {
       await request(app)

@@ -12,7 +12,7 @@ const merchant1 = {
 const merchant2 = {
   name: "Merchant2",
   location: "LaLaguna",
-  race: "Human"
+  race: "General"
 }
 
 const merchant3 = {
@@ -32,7 +32,7 @@ describe('/merchants', () => {
   describe('POST /merchants', () => {
     describe('Creaciones correctas', () => {
       test('Crea un nuevo mercader 1', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/merchants')
         .send({
           name: 'General1',
@@ -40,10 +40,16 @@ describe('/merchants', () => {
           type: 'General'
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'General1',
+          location: 'Lugar1',
+          type: 'General'
+        })
       });
 
       test('Crea un nuevo mercader 2', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/merchants')
         .send({
           name: 'Blacksmith1',
@@ -51,10 +57,16 @@ describe('/merchants', () => {
           type: 'Blacksmith'
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Blacksmith1',
+          location: 'Lugar2',
+          type: 'Blacksmith'
+        })
       });
 
       test('Crea un nuevo mercader 3', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/merchants')
         .send({
           name: 'Alchemist1',
@@ -62,11 +74,28 @@ describe('/merchants', () => {
           type: 'Alchemist'
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Alchemist1',
+          location: 'Lugar2',
+          type: 'Alchemist'
+        })
       });
     });
 
     describe('Creaciones incorrectas', () => {
-      test('Crea un nuevo cliente con nombre incorrecto', async () => {
+      test('Crea un nuevo mercader con nombre repetido', async () => {
+        await request(app)
+        .post('/merchants')
+        .send({
+          name: 'Merchant1',
+          location: 'Lugar1',
+          type: 'General'
+        })
+        .expect(400);
+      });
+
+      test('Crea un nuevo mercader con nombre incorrecto', async () => {
         await request(app)
         .post('/merchants')
         .send({
@@ -74,18 +103,29 @@ describe('/merchants', () => {
           location: 'Lugar1',
           type: 'General'
         })
-        .expect(500);
+        .expect(400);
       });
   
-      test('Crea un nuevo cliente con localización incorrecta', async () => {
+      test('Crea un nuevo mercader con localización incorrecta', async () => {
         await request(app)
         .post('/merchants')
         .send({
           name: 'General2',
           location: '/',
-          race: 'General'
+          type: 'General'
         })
-        .expect(500);
+        .expect(400);
+      });
+
+      test('Crea un nuevo mercader con tipo incorrecto', async () => {
+        await request(app)
+        .post('/merchants')
+        .send({
+          name: 'General2',
+          location: 'Lugar1',
+          type: 'AAA'
+        })
+        .expect(400);
       });
     });
   });
@@ -93,15 +133,33 @@ describe('/merchants', () => {
     describe('GET /merchants', () => {
         describe('obtenciones correctas', () => {
           test('Obtener el Merchant1', async () => {
-            await request(app).get("/merchants?name=Merchant1").expect(200);
+            const res = await request(app).get("/merchants?name=Merchant1").expect(200);
+
+            expect(res.body[0]).to.include({
+              name: "Merchant1",
+              location: "LaLaguna",
+              type: "Blacksmith"
+            })
           })
     
           test('Obtener el Merchant2', async () => {
-            await request(app).get("/merchants?name=Merchant2").expect(200);
+            const res = await request(app).get("/merchants?name=Merchant2").expect(200);
+
+            expect(res.body[0]).to.include({
+              name: "Merchant2",
+              location: "LaLaguna",
+              type: "General"
+            })
           })
     
           test('Obtener el Merchant3', async () => {
-            await request(app).get("/merchants?name=Merchant3").expect(200);
+            const res = await request(app).get("/merchants?name=Merchant3").expect(200);
+
+            expect(res.body[0]).to.include({
+              name: "Merchant3",
+              location: "LaLaguna",
+              type: "Alchemist"
+            })
           })
         })
     
@@ -169,17 +227,21 @@ describe('/merchants', () => {
           })
           .expect(201);
   
-          await request(app)
+          const res = await request(app)
           .patch('/merchants?name=Alchemist10')
           .send({
+            location: 'Lugar20',
+          })
+          .expect(200);
+
+          expect(res.body).to.include({
             name: 'Alchemist10',
             location: 'Lugar20',
             type: 'Alchemist'
           })
-          .expect(200);
       });
 
-      test('Actualiza ', async () => {
+      test('Actualiza pero no encuentra', async () => {
         await request(app)
           .post('/merchants')
           .send({
@@ -199,7 +261,25 @@ describe('/merchants', () => {
           .expect(404);
       });
 
-      test('Actualiza ', async () => {
+      test('Actualiza con campo erroneo por validador', async () => {
+        await request(app)
+          .post('/merchants')
+          .send({
+            name: 'Alchemist161',
+            location: 'Lugar2',
+            type: 'Alchemist'
+          })
+          .expect(201);
+  
+          await request(app)
+          .patch('/merchants?name=Elf16')
+          .send({
+            name: '/'
+          })
+          .expect(500);
+      });
+
+      test('Actualiza con campo erroneo', async () => {
         await request(app)
           .post('/merchants')
           .send({
@@ -217,7 +297,7 @@ describe('/merchants', () => {
           .expect(400);
       });
 
-      test('Actualiza ', async () => {
+      test('Actualizacion erronea', async () => {
         await request(app)
           .post('/merchants')
           .send({
@@ -254,7 +334,7 @@ describe('/merchants', () => {
     });
 
     test('Actualiza correctamente el nombre del Merchant', async () => {
-      await request(app)
+      const res = await request(app)
         .patch(`/merchants/${createdMerchantId}`)
         .send({
           name: 'Alchemist100',
@@ -262,6 +342,12 @@ describe('/merchants', () => {
           type: 'Alchemist'
         })
         .expect(200);
+
+        expect(res.body).to.include({
+          name: 'Alchemist100',
+          location: 'Lugar200',
+          type: 'Alchemist'
+        })
     });
 
     test('Devuelve 404 si el ID no existe', async () => {
@@ -299,9 +385,15 @@ describe('/merchants', () => {
           })
           .expect(201);
       
-        await request(app)
+        const res = await request(app)
           .delete('/merchants?name=Alchemist1000')
           .expect(200);
+
+        expect(res.body).to.include({
+          name: 'Alchemist1000',
+          location: 'Lugar200',
+          type: 'Alchemist'
+        })
       });
   
       test('Devuelve 404 si no se encuentra ningún merchant con ese filtro', async () => {
@@ -329,10 +421,17 @@ describe('/merchants', () => {
       
           merchantId = response.body._id;
       });
+
       test('Elimina correctamente un bien existente', async () => {
-        await request(app)
+        const res = await request(app)
           .delete(`/merchants/${merchantId}`)
           .expect(200);
+
+        expect(res.body).to.include({
+          name: 'Alchemist2000',
+            location: 'Lugar200',
+            type: 'Alchemist'
+        })
     
         const deleted = await Merchant.findById(merchantId);
         expect(deleted).toBeNull();

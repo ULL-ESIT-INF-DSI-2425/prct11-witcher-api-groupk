@@ -7,7 +7,6 @@ import validator from 'validator';
 export interface GoodInterface {
     name: string,
     description: string,
-    materials: string[],
     weight: number,
     crowns: number
 }
@@ -35,17 +34,6 @@ const GoodSchema = new Schema<GoodInterface>({
                 throw new Error('La descripción debe comenzar con mayúscula.');
             } else if (!validator.default.isAlphanumeric(value)) {
                 throw new Error('La descripción solo puede contener caracteres alfanuméricos.');
-            }
-        }
-    },
-    materials: {
-        type: [String],
-        required: true,
-        validate: (value: string[]) => {
-            if (value.length === 0) {
-                throw new Error('La lista de materiales no puede ser vacía.');
-            } else if (value.some((mat) => mat === '' || (!validator.default.isAlphanumeric(mat)))) {
-                throw new Error('Los materiales solo puede contener caracteres alfanuméricos y no pueden estar vacíos.');
             }
         }
     },

@@ -14,7 +14,7 @@ merchantRouter.post('/merchants', async (req, res) => {
     await merchant.save();
     res.status(201).send(merchant);
   } catch (err) {
-    res.status(500).send(err);
+    res.status(400).send(err);
   }
 }); 
 

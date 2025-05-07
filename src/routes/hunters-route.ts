@@ -83,7 +83,7 @@ hunterRouter.patch('/hunters', async (req, res) => {
           res.send(client);
         }
       } catch (err) {
-        res.status(500).send(err);
+        res.status(400).send(err);
       }
     }
   }

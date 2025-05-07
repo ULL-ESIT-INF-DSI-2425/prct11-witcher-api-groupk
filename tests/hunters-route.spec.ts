@@ -32,7 +32,7 @@ describe('/hunters', () => {
   describe('POST /hunters', () => {
     describe('Creaciones correctas', () => {
       test('Crea un nuevo cliente 1', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/hunters')
         .send({
           name: 'Human1',
@@ -40,10 +40,16 @@ describe('/hunters', () => {
           race: 'Human'
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Human1',
+          location: 'Lugar1',
+          race: 'Human'
+        });
       });
 
       test('Crea un nuevo cliente 2', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/hunters')
         .send({
           name: 'Elf1',
@@ -51,10 +57,16 @@ describe('/hunters', () => {
           race: 'Elf'
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Elf1',
+          location: 'Lugar1',
+          race: 'Elf'
+        });
       });
 
       test('Crea un nuevo cliente 3', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/hunters')
         .send({
           name: 'Wizard1',
@@ -62,10 +74,27 @@ describe('/hunters', () => {
           race: 'Wizard'
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Wizard1',
+          location: 'Lugar2',
+          race: 'Wizard'
+        });
       });
     });
 
     describe('Creaciones incorrectas', () => {
+      test('Crea un nuevo cliente con nombre incorrecto', async () => {
+        await request(app)
+        .post('/hunters')
+        .send({
+          name: 'Wizard1',
+          location: 'Lugar1',
+          race: 'Human'
+        })
+        .expect(400);
+      });
+
       test('Crea un nuevo cliente con nombre incorrecto', async () => {
         await request(app)
         .post('/hunters')
@@ -104,15 +133,33 @@ describe('/hunters', () => {
   describe('GET /hunters', () => {
     describe('obtenciones correctas', () => {
       test('Obtener el Hunter1', async () => {
-        await request(app).get("/hunters?name=Hunter1").expect(200);
+        const res = await request(app).get("/hunters?name=Hunter1").expect(200);
+
+        expect(res.body[0]).to.include({
+          name: "Hunter1",
+          location: "LaLaguna",
+          race: "Human"
+        })
       })
 
       test('Obtener el Hunter2', async () => {
-        await request(app).get("/hunters?name=Hunter2").expect(200);
+        const res = await request(app).get("/hunters?name=Hunter2").expect(200);
+
+        expect(res.body[0]).to.include({
+          name: "Hunter2",
+          location: "LaLaguna",
+          race: "Human"
+        })
       })
 
       test('Obtener el Hunter3', async () => {
-        await request(app).get("/hunters?name=Hunter3").expect(200);
+        const res = await request(app).get("/hunters?name=Hunter3").expect(200);
+
+        expect(res.body[0]).to.include({
+          name: "Hunter3",
+          location: "LaLaguna",
+          race: "Human"
+        })
       })
     })
 
@@ -180,14 +227,18 @@ describe('/hunters', () => {
         })
         .expect(201);
 
-        await request(app)
+        const res = await request(app)
         .patch('/hunters?name=Elf5')
         .send({
+          location: 'Lugar106',
+        })
+        .expect(200);
+
+        expect(res.body).to.include({
           name: 'Elf5',
           location: 'Lugar106',
           race: 'Elf'
         })
-        .expect(200);
     });
 
     test('Cazador inexistente debe devolver 404', async () => {
@@ -210,7 +261,23 @@ describe('/hunters', () => {
         .expect(404);
     });
 
-    test('Cazador inexistente debe devolver 400', async () => {
+    test('Actualizacion erronea debe devolver 500', async () => {
+      await request(app)
+        .post('/hunters')
+        .send({
+          name: 'Elf11',
+          location: 'Lugar10',
+          race: 'Elf'
+        })
+        .expect(201);
+
+        await request(app)
+        .patch('/hunters?name=Elf8')
+        .send({ race: 'AAA' })
+        .expect(400);
+    });
+
+    test('Actualizacion debe devolver 400', async () => {
       await request(app)
         .post('/hunters')
         .send({
@@ -226,7 +293,7 @@ describe('/hunters', () => {
         .expect(400);
     });
 
-    test('Cazador inexistente debe devolver 400', async () => {
+    test('Cazador existente debe devolver 400', async () => {
       await request(app)
         .post('/hunters')
         .send({
@@ -242,7 +309,7 @@ describe('/hunters', () => {
           name: 'Elf6',
           race: 'Elf'
         })
-        .expect(500);
+        .expect(400);
     });
     
   });
@@ -264,14 +331,19 @@ describe('/hunters', () => {
     });
 
     test('Actualiza correctamente el nombre del hunter', async () => {
-      await request(app)
+      const res = await request(app)
         .patch(`/hunters/${createdHunterId}`)
         .send({
-          name: 'Elf150',
           location: 'Lugar101',
-          race: 'Elf'
+          race: 'Human'
         })
         .expect(200);
+
+        expect(res.body).to.include({
+          name: 'Elf150',
+          location: 'Lugar101',
+          race: 'Human'
+        })
     });
 
     test('Devuelve 404 si el ID no existe', async () => {
@@ -308,9 +380,15 @@ describe('/hunters', () => {
         })
         .expect(201);
     
-      await request(app)
+      const res = await request(app)
         .delete('/hunters?name=Elf155')
         .expect(200);
+
+      expect(res.body).to.include({
+        name: 'Elf155',
+        location: 'Lugar',
+        race: 'Elf'
+      })
     });
 
     test('Devuelve 404 si no se encuentra ningún hunter con ese filtro', async () => {
@@ -331,20 +409,27 @@ describe('/hunters', () => {
       .post("/hunters")
       .send({
         name: 'Elf50',
-          location: 'Lugar',
-          race: 'Elf'
+        location: 'Lugar',
+        race: 'Elf'
       })
       .expect(201);
   
 			hunterId = response.body._id;
   });
+
   test('Elimina correctamente un bien existente', async () => {
-    await request(app)
+    const res = await request(app)
       .delete(`/hunters/${hunterId}`)
       .expect(200);
 
     const deleted = await Client.findById(hunterId);
     expect(deleted).toBeNull();
+
+    expect(res.body).to.include({
+      name: 'Elf50',
+      location: 'Lugar',
+      race: 'Elf'
+    })
   });
 
   test('Devuelve 404 si el bien no existe', async () => {

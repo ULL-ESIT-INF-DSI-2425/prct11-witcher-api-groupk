@@ -6,7 +6,6 @@ import { Good } from "../src/items/good";
 const bien1 = {
   "name": "Bien1",
 	"description": "RecuperaVida",
-	"materials": ["Hierba", "Agua"],
 	"weight": 0.5,
 	"crowns": 10
 }
@@ -14,7 +13,6 @@ const bien1 = {
 const bien2 = {
   "name": "Bien2",
 	"description": "RecuperaVida",
-	"materials": ["Hierba", "Agua"],
 	"weight": 0.5,
 	"crowns": 10
 }
@@ -22,7 +20,6 @@ const bien2 = {
 const bien3 = {
   "name": "Bien3",
 	"description": "RecuperaVida",
-	"materials": ["Hierba", "Agua"],
 	"weight": 0.5,
 	"crowns": 10
 }
@@ -38,53 +35,82 @@ describe('/goods', () => {
   describe('POST /goods', () => {
     describe('Creaciones correctas', () => {
       test('Crea un nuevo bien 1', async () => {
-        await request(app)
+        const res = await request(app)
           .post('/goods')
           .send({
             name: 'Bien10',
             description: 'Descripcion',
-            materials: ['Material1'],
             weight: 10,
             crowns: 10
           })
           .expect(201);
+
+          expect(res.body).to.include({
+            name: 'Bien10',
+            description: 'Descripcion',
+            weight: 10,
+            crowns: 10
+          });
       });
 
       test('Crea un nuevo bien 2', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/goods')
         .send({
           name: 'Bien20',
           description: 'Descripcion1',
-          materials: ['Material2'],
           weight: 15,
           crowns: 10
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Bien20',
+          description: 'Descripcion1',
+          weight: 15,
+          crowns: 10
+        });
       });
 
       test('Crea un nuevo bien 3', async () => {
-        await request(app)
+        const res = await request(app)
         .post('/goods')
         .send({
           name: 'Bien30',
           description: 'Descripcion2',
-          materials: ['Material3'],
           weight: 10,
           crowns: 20
         })
         .expect(201);
+
+        expect(res.body).to.include({
+          name: 'Bien30',
+          description: 'Descripcion2',
+          weight: 10,
+          crowns: 20
+        });
       });
     });
 
     describe('Creaciones incorrectas', () => {
+      test('Crea un nuevo con nombre repetido', async () => {
+        await request(app)
+          .post('/goods')
+          .send({
+            name: 'Bien1',
+            description: 'Descripcion',
+            weight: 10,
+            crowns: 10
+          })
+          .expect(400);
+      });
+
       test('Crea un nuevo con nombre incorrecto', async () => {
         await request(app)
           .post('/goods')
           .send({
             name: '/',
             description: 'Descripcion',
-            materials: ['Material1'],
             weight: 10,
             crowns: 10
           })
@@ -97,38 +123,11 @@ describe('/goods', () => {
         .send({
           name: 'Bien4',
           description: '/',
-          materials: ['Material1'],
           weight: 10,
           crowns: 10
         })
         .expect(400);
       });
-
-        test('Crea un nuevo con materiales incorrectos', async () => {
-          await request(app)
-          .post('/goods')
-          .send({
-            name: 'Bien4',
-            description: 'Descripcion',
-            materials: ['/'],
-            weight: 10,
-            crowns: 10
-          })
-          .expect(400);
-        });
-
-        test('Crea un nuevo con ningún material', async () => {
-          await request(app)
-          .post('/goods')
-          .send({
-            name: 'Bien4',
-            description: 'Descripcion',
-            materials: ['/'],
-            weight: 10,
-            crowns: 10
-          })
-          .expect(400);
-        });
 
       test('Crea un nuevo con peso incorrecto', async () => {
         await request(app)
@@ -136,7 +135,6 @@ describe('/goods', () => {
         .send({
           name: 'Bien4',
           description: 'Descripcion',
-          materials: ['Material1'],
           weight: -10,
           crowns: 10
         })
@@ -149,7 +147,6 @@ describe('/goods', () => {
         .send({
           name: 'Bien4',
           description: 'Descripcion',
-          materials: ['Material1'],
           weight: 10,
           crowns: -10
         }).expect(400);
@@ -160,22 +157,61 @@ describe('/goods', () => {
 	describe('GET /goods', () => {
 			describe('obtenciones correctas', () => {
 				test('Obtener el Bien1', async () => {
-					await request(app).get("/goods?name=Bien1").expect(200);
+					const res = await request(app).get("/goods?name=Bien1").expect(200);
+
+          expect(res.body[0]).to.include({
+            name: "Bien1",
+            description: "RecuperaVida",
+            weight: 0.5,
+            crowns: 10
+          })
 				})
 
-				test('Obtener el Bien2', async () => {
-					const res = await request(app).get("/goods?name=Bien2");
+				test('Obtener los bienes con descripción RecuperaVida', async () => {
+					const res = await request(app).get("/goods?description=RecuperaVida");
           expect(res.statusCode).toBe(200);
+
+          expect(res.body[0]).to.include({
+            name: "Bien1",
+            description: "RecuperaVida",
+            weight: 0.5,
+            crowns: 10
+          })
+
+          expect(res.body[1]).to.include({
+            name: "Bien2",
+            description: "RecuperaVida",
+            weight: 0.5,
+            crowns: 10
+          })
+
+          expect(res.body[2]).to.include({
+            name: "Bien3",
+            description: "RecuperaVida",
+            weight: 0.5,
+            crowns: 10
+          })
 				})
 
-				test('Obtener el Bien3', async () => {
-					await request(app).get("/goods?name=Bien3").expect(200);
+				test('Obtener un bien con varios argumentos', async () => {
+					const res = await request(app).get("/goods?name=Bien3&description=RecuperaVida&crowns=10").expect(200);
+
+          expect(res.body[0]).to.include({
+            name: "Bien3",
+            description: "RecuperaVida",
+            weight: 0.5,
+            crowns: 10
+          })
 				})
 			})
 
       describe('obtenciones incorrectas', () => {
         test('Bien inexistente debe devolver 404', async () => {
           await request(app).get("/goods?name=inexistente").expect(404);
+        });
+
+        test('Bien inexistente debe devolver 404', async () => {
+          await request(app).get("/goods?name=inexistente&description=RecuperaVida").expect(404);
         });
 
         test('Solicitud que debe devolver 500', async () => {
@@ -193,7 +229,6 @@ describe('/goods', () => {
         .send({
           name: 'Bien15',
 					description: 'Descripcion',
-					materials: ['Material1'],
 					weight: 10,
 					crowns: 10
         })
@@ -213,7 +248,6 @@ describe('/goods', () => {
 				weight: 10,
 				crowns: 10
       });
-      expect(response.body.materials).to.deep.equal(['Material1']);
   
       const goodFromDb = await Good.findById(createdGoodId);
       expect(goodFromDb).not.toBeNull();
@@ -237,28 +271,37 @@ describe('/goods', () => {
 describe('PATCH /goods', () => {
   
   test('Actualiza correctamente un bien por name', async () => {
-		await request(app)
+		let res = await request(app)
       .post("/goods")
       .send({
         name: 'Bien122',
         description: 'Descripcion',
-        materials: ['Material'],
         weight: 10,
         crowns: 10
       })
       .expect(201);
-  
 
-			await request(app)
+      expect(res.body).to.include({
+        name: 'Bien122',
+        description: 'Descripcion',
+        weight: 10,
+        crowns: 10
+      });
+  
+			res = await request(app)
       .patch(`/goods?name=Bien122`)
       .send({
-        name: 'Bien122',  
-        description: 'Descripcion',
-				materials: ['Material'],
         weight: 20,
-        crowns: 10
+        crowns: 20
       })
       .expect(200);
+
+      expect(res.body).to.include({
+        name: 'Bien122',
+        description: 'Descripcion',
+        weight: 20,
+        crowns: 20
+      });
   });
 
   test('Devuelve 404 si el bien no existe', async () => {
@@ -267,6 +310,13 @@ describe('PATCH /goods', () => {
       .query({ name: 'NoExiste' })
       .send({ description: 'Nada' })
       .expect(404);
+  });
+
+  test('Devuelve 400 si la actualización no es correcta', async () => {
+    await request(app)
+      .patch('/goods')
+      .send({ description: '/' })
+      .expect(400);
   });
 
   test('Devuelve 400 si no se pasan parámetros de query', async () => {
@@ -301,7 +351,6 @@ describe('PATCH /goods/:id', () => {
       .send({
         name: 'Bien150',
         description: 'Descripcion',
-        materials: ['Material'],
         weight: 10,
         crowns: 10
       })
@@ -311,16 +360,22 @@ describe('PATCH /goods/:id', () => {
   });
 
   test('Actualiza correctamente el nombre del bien', async () => {
-    await request(app)
+    const res = await request(app)
       .patch(`/goods/${createdGoodId}`)
       .send({
         name: 'Bien150',  
         description: 'Descripcion',
-				materials: ['Material'],
         weight: 20,
         crowns: 10
       })
       .expect(200);
+
+      expect(res.body).to.include({
+        name: 'Bien150',  
+        description: 'Descripcion',
+        weight: 20,
+        crowns: 10
+      })
   });
 
   test('Devuelve 404 si el ID no existe', async () => {
@@ -353,15 +408,21 @@ describe('DELETE /goods', () => {
 			.send({
 					name: 'Bien100',
 					description: 'Descripcion',
-					materials: ['Material1'],
 					weight: 10,
 					crowns: 10
 			})
 			.expect(201);
   
-    await request(app)
+    const res = await request(app)
       .delete('/goods?name=Bien100')
       .expect(200);
+
+    expect(res.body).to.include({
+      name: 'Bien100',
+			description: 'Descripcion',
+			weight: 10,
+			crowns: 10
+    })
   });
 
   test('Devuelve 404 si no se encuentra ningún bien con ese filtro', async () => {
@@ -383,7 +444,6 @@ describe('DELETE /goods/:id', () => {
       .send({
         name: 'Bien155',
         description: 'Descripcion',
-        materials: ['Material1'],
         weight: 10,
         crowns: 10
       })
@@ -393,9 +453,16 @@ describe('DELETE /goods/:id', () => {
   });
 
   test('Elimina correctamente un bien existente', async () => {
-    await request(app)
+    const res = await request(app)
       .delete(`/goods/${goodId}`)
       .expect(200);
+
+    expect(res.body).to.include({
+      name: 'Bien155',
+      description: 'Descripcion',
+      weight: 10,
+      crowns: 10
+    })
 
     const deleted = await Good.findById(goodId);
     expect(deleted).toBeNull();
