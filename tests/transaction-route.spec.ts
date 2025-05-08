@@ -81,10 +81,14 @@ describe('/transactions', () => {
       expect(Number(stock!.toObject().quantity)).toBe(12);
   
       expect(res.body).toHaveProperty('_id');
+      expect(res.body).toMatchObject({
+        quantities: [2],
+        date: '2025-05-06',
+        time: '10:30',
+        crowns: 20,
+      });
       expect(res.body.merchant.name).toBe('Gilberto');
       expect(res.body.goods[0].name).toBe('PocionPrueba');
-      expect(res.body.quantities[0]).toBe(2);
-      expect(res.body.crowns).toBe(20);
     });
 
     test('Crea transacción de mercader correctamente', async () => {
@@ -205,7 +209,14 @@ describe('/transactions', () => {
   
     test('Devuelve transacciones por mercader', async () => {
       const res = await request(app).get('/transactions?merchant=Gilberto').expect(200);
-      expect(res.body[0].merchant.name).toBe('Gilberto');
+      expect(Array.isArray(res.body)).toBe(true);
+
+      const transaction = res.body[0];
+      expect(transaction).toMatchObject({
+        crowns: 20,
+        date: '2025-05-06',
+        time: '10:30'
+      });
     });
   
     test('Devuelve error si se combinan client y merchant', async () => {
@@ -230,7 +241,16 @@ describe('/transactions', () => {
       ).expect(200);
   
       expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBeGreaterThan(0);
+      expect(res.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            date: '2025-05-06',
+            time: '14:30',
+            quantities: [2],
+            crowns: 20
+          }),
+        ])
+      );
     });
   
     test('Devuelve 404 si no hay transacciones para ese cliente', async () => {
