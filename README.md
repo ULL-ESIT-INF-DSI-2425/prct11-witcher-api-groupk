@@ -3,3 +3,9 @@
 [![CI Tests](https://github.com/ULL-ESIT-INF-DSI-2425/prct11-witcher-api-groupk/actions/workflows/ci.yml/badge.svg)](https://github.com/ULL-ESIT-INF-DSI-2425/prct11-witcher-api-groupk/actions/workflows/ci.yml)
 [![Coveralls](https://github.com/ULL-ESIT-INF-DSI-2425/prct11-witcher-api-groupk/actions/workflows/coveralls.yml/badge.svg)](https://github.com/ULL-ESIT-INF-DSI-2425/prct11-witcher-api-groupk/actions/workflows/coveralls.yml)
 [![SonarQube-Cloud](https://github.com/ULL-ESIT-INF-DSI-2425/prct11-witcher-api-groupk/actions/workflows/build.yml/badge.svg)](https://github.com/ULL-ESIT-INF-DSI-2425/prct11-witcher-api-groupk/actions/workflows/build.yml)
+
+MongoDBAtlas:
+mongodb+srv://LaPosadadelLoboBlanco-rest-api:notesDSI@clusterlaposadadellobob.nr4iyv0.mongodb.net/
+
+Despliegue en Render:
+https://prct11-witcher-api-groupk-1.onrender.com
