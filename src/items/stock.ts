@@ -23,7 +23,7 @@ const StockSchema = new Schema<StockInterface>({
         type: Number,
         default: 1,
         validate: (value: number) => {
-            if (value <= 0) {
+            if (value < 0) {
                 throw new Error('La cantidad del stock tiene que ser mínimo de 1.');
             }
         }

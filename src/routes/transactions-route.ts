@@ -5,6 +5,7 @@ import { Good } from '../items/good.js';
 import { Merchant } from '../characters/merchant.js';
 import { Client } from '../characters/client.js';
 import { Document, Types } from 'mongoose';
+import validator from 'validator';
 
 /**
  * Router de transacciones.
@@ -204,7 +205,9 @@ transactionRouter.get('/transactions', async (req, res) => {
         } catch (err) {
             res.status(500).send(err);
         }
-    } else if (req.query.iniDate && req.query.finDate && req.query.iniTime && req.query.finTime) {
+    } else if (req.query.iniDate && req.query.finDate && req.query.iniTime && req.query.finTime &&
+                validator.default.isDate(String(req.query.iniDate)) && validator.default.isDate(String(req.query.finDate)) &&
+                validator.default.isTime(String(req.query.iniTime)) && validator.default.isTime(String(req.query.finTime))) {
         if (req.query.iniTime <= req.query.finTime || (req.query.iniTime === req.query.finTime && req.query.iniTime <= req.query.finTime)) {
             try {
                 const transactions = await Transaction.find({});
