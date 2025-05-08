@@ -1,19 +1,38 @@
-name: Build
+name: SonarQube-Cloud 
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [ main ]
+
 jobs:
   sonarqube:
     name: SonarQube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 23.x
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          node-version: 23.x
+          cache: 'npm'
+
+      - name: Start MongoDB 8.0
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-version: '8.0'
+
+      - name: Install dependencies 
+        run: npm ci 
+
+      - name: Generate coverage info
+        run: npm run coverage 
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: $
+          SONAR_TOKEN: $
