@@ -57,4 +57,4 @@ const GoodSchema = new Schema<GoodInterface>({
     }
 });
 
-export const Good = model<GoodInterface>('Good', GoodSchema);
+export const Good = model<GoodInterface>('Good', GoodSchema); 
