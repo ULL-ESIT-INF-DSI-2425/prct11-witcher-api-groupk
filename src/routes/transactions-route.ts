@@ -179,7 +179,7 @@ transactionRouter.get('/transactions', async (req, res) => {
                 res.status(404).send({ error: 'Cliente no encontrado.' });
             }
         } catch (err) {
-            res.status(500).send(err);
+            res.status(500).send(err); 
         }
     } else if (req.query.merchant) {
         try {
