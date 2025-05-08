@@ -15,6 +15,11 @@ export interface TransactionInterface extends Document {
     time: string
 }
 
+/**
+ * Esquema TransactionSchema.
+ * Almacena la información que ha de tener una transacción, esta puede ser con un mercader o un cliente (se controlo mediante los manejadores).
+ * Conlleva una serie de bienes y cantidades intercambiadas, esto se hace en una fecha y hora y por un precio en coronas.
+ */
 const TransactionSchema = new Schema<TransactionInterface>({
   merchant: {
     type: Schema.Types.ObjectId,

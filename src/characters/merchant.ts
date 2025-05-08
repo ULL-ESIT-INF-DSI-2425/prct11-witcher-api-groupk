@@ -9,6 +9,10 @@ export interface MerchantInterface extends PersonInterface {
     type: 'Blacksmith' | 'Alchemist' | 'General'
 }
 
+/**
+ * Esquema MerchantSchema. 
+ * Representa toda la información que se ha de almacenar sobre un mercader: nombre, localización y tipo.
+ */
 const MerchantSchema = new Schema<MerchantInterface>({
     name: {
         type: String,

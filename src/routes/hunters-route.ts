@@ -2,12 +2,18 @@ import express from 'express'
 import mongoose from 'mongoose';
 import { Client, ClientInterface } from '../characters/client.js' 
 
+/**
+ * Router de clientes.
+ */
 export const hunterRouter = express.Router();
 
 const port = process.env.PORT || 3000
 
 hunterRouter.use(express.json());
 
+/**
+ * Manejador POST de /hunters. Permite guardar la información de un cliente en la base de datos.
+ */
 hunterRouter.post('/hunters', async (req, res) => {
   const client = new Client(req.body);
 
@@ -19,6 +25,9 @@ hunterRouter.post('/hunters', async (req, res) => {
   }
 }); 
 
+/**
+ * Manejador GET de /hunters. Permite obtener la información de un cliente a partir de su nombre pasado como un query string.
+ */
 hunterRouter.get('/hunters', async (req, res) => {
   const name = req.query.name as string;
 
@@ -35,6 +44,9 @@ hunterRouter.get('/hunters', async (req, res) => {
   }
 });
 
+/**
+ * Manejador GET de /hunters. Permite obtener la información de un cliente a partir de su ID pasado como parámetro dinámico.
+ */
 hunterRouter.get('/hunters/:id', async (req, res) => {
   const id = req.params.id;
 
@@ -51,6 +63,9 @@ hunterRouter.get('/hunters/:id', async (req, res) => {
   }
 });
 
+/**
+ * Manejador PATCH de /hunters. Permite actualizar la información de un cliente a partir de su nombre pasado como un query string.
+ */
 hunterRouter.patch('/hunters', async (req, res) => {
   if (!req.query.name) {
     res.status(400).send({
@@ -89,6 +104,9 @@ hunterRouter.patch('/hunters', async (req, res) => {
   }
 });
 
+/**
+ * Manejador PATCH de /hunters. Permite actualizar la información de un cliente a partir de su ID pasado como un parámetro dinámico.
+ */
 hunterRouter.patch('/hunters/:id', async (req, res) => {
   if (!req.body) {
     res.status(400).send({
@@ -123,6 +141,9 @@ hunterRouter.patch('/hunters/:id', async (req, res) => {
   }
 });
 
+/**
+ * Manejador DELETE de /hunters. Permite borrar a un cliente de la base de datos a partir de su nombre pasado como un query string.
+ */
 hunterRouter.delete('/hunters', async (req, res) => {
   if (!req.query.name) {
     res.status(400).send({
@@ -143,6 +164,9 @@ hunterRouter.delete('/hunters', async (req, res) => {
   }
 });
 
+/**
+ * Manejador DELETE de /hunters. Permite borrar a un cliente de la base de datos a partir de su ID pasado como un parámetro dinámico.
+ */
 hunterRouter.delete('/hunters/:id', async (req, res) => {
   try {
     const client = await Client.findByIdAndDelete(req.params.id);

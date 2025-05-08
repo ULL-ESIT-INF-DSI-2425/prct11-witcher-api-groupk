@@ -9,6 +9,10 @@ interface StockInterface extends Document {
     quantity: number
 }
 
+/**
+ * Esquema StockSchema.
+ * Almacena la información del stock de los bienes en la posada, un par bien y cantidad.
+ */
 const StockSchema = new Schema<StockInterface>({
     good: {
         type: Schema.Types.ObjectId,

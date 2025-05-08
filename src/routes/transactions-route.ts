@@ -6,12 +6,21 @@ import { Merchant } from '../characters/merchant.js';
 import { Client } from '../characters/client.js';
 import { Document, Types } from 'mongoose';
 
+/**
+ * Router de transacciones.
+ */
 export const transactionRouter = express.Router();
 
 const port = process.env.PORT || 3000
 
 transactionRouter.use(express.json());
 
+/**
+ * Manejador POST de /transactions. Permite guardar la información de una transacción en la base de datos.
+ * Si la transacción es la de un cliente, se elimina del stock la cantidad correspondiente de los bienes.
+ * Si la transacción es la de un merdader, se añade al stock la cantidad correspondiente.
+ * Si el stock no cuenta con ese bien, se añade un documento a Stock.
+ */
 transactionRouter.post('/transactions', async (req, res) => {
     if ((req.body.merchant && req.body.client) || (!req.body.merchant && !req.body.client)) {
         res.status(400).send({ error: 'Una transacción no puede tener un mercader y un cliente al mismo tiempo ni ninguno.' })
@@ -139,6 +148,9 @@ transactionRouter.post('/transactions', async (req, res) => {
     }
 });
 
+/**
+ * Manejador GET de /transactions. Permite obtener la información de una serie de transacciones según el nombre del mercader/cliente o un rango de fechas y horas pasados como query string.
+ */
 transactionRouter.get('/transactions', async (req, res) => {
     if (((req.query.merchant && req.query.client) || (!req.query.merchant && !req.query.client)) && !req.query.iniDate) {
         res.status(400).send({ error: 'Una transacción no puede tener un mercader y un cliente al mismo tiempo ni ninguno.' });
@@ -226,7 +238,9 @@ transactionRouter.get('/transactions', async (req, res) => {
     }
 });
 
-
+/**
+ * Manejador GET de /transactions. Permite obtener la información de una transacción según su ID pasado como parámetro dinámico.
+ */
 transactionRouter.get('/transactions/:id', async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
@@ -241,7 +255,11 @@ transactionRouter.get('/transactions/:id', async (req, res) => {
     }
 });
 
-
+/**
+ * Manejador PATCH de /transactions. Permite actualizar la información de una transacción según su ID pasado como parámetro dinámico.
+ * Solo permite actualizar los bienes y cantidades intercambiados al mismo tiempo.
+ * La actualización del stock se actualiza con este cambio.
+ */
 transactionRouter.patch("/transactions/:id", async (req, res) => {
     try {
       const allowedUpdates = ["goods"];
@@ -343,6 +361,10 @@ transactionRouter.patch("/transactions/:id", async (req, res) => {
     }
   });
 
+  /**
+ * Manejador DELETE de /transactions. Permite borrar una transacción de la base de datos según su ID pasado como parámetro dinámico.
+ * Una vez borrada la transacción, se hace una devolución de los bienes y se actualiza la información del stock de forma correspondiente.
+ */
 transactionRouter.delete('/transactions/:id', async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);

@@ -3,12 +3,18 @@ import mongoose from 'mongoose';
 import { Good } from '../items/good.js' 
 import { ReturnDocument } from 'mongodb';
 
+/**
+ * Router de bienes.
+ */
 export const goodRouter = express.Router();
 
 const port = process.env.PORT || 3000
 
 goodRouter.use(express.json());
 
+/**
+ * Manejador POST de /goods. Permite almacenar el documento de un bien.
+ */
 goodRouter.post('/goods', async (req, res) => {
   const good = new Good(req.body);
 
@@ -20,6 +26,9 @@ goodRouter.post('/goods', async (req, res) => {
   }
 }); 
 
+/**
+ * Manejador GET de /goods. Permite obtener la información de una serie de bienes por cualquiera de sus campos recibidos como query string.
+ */
 goodRouter.get('/goods', async (req, res) => {
   const { name, description, weight, crowns } = req.query;
 
@@ -42,7 +51,9 @@ goodRouter.get('/goods', async (req, res) => {
   }
 });
 
-
+/**
+ * Manejador GET de /goods. Permite obtener la información de un bien a partir de su ID único pasado como parámetro dinámico.
+ */
 goodRouter.get('/goods/:id', async (req, res) => {
   try {
     const good = await Good.findById(req.params.id);
@@ -56,6 +67,9 @@ goodRouter.get('/goods/:id', async (req, res) => {
   }
 });
 
+/**
+ * Manejador PATCH de /goods. Permite actualizar la información de un bien a partir de la query string de cualquiera de sus campos.
+ */
 goodRouter.patch('/goods', async (req, res) => {
   const { name, description, weight, crowns } = req.query;
 
@@ -102,6 +116,9 @@ goodRouter.patch('/goods', async (req, res) => {
   }
 });
 
+/**
+ * Manejador PATCH de /goods. Permite actualizar la información de un bien mediante su ID pasado como parámetro dinámico.
+ */
 goodRouter.patch('/goods/:id', async (req, res) => {
   if (!req.body) {
     res.status(400).send({
@@ -136,6 +153,9 @@ goodRouter.patch('/goods/:id', async (req, res) => {
   }
 });
 
+/**
+ * Manejador DELETE de /goods. Permite borrar un bien según cualquiera de sus campos.
+ */
 goodRouter.delete('/goods', async (req, res) => {
   const { name, description, weight, crowns } = req.query;
 
@@ -163,6 +183,9 @@ goodRouter.delete('/goods', async (req, res) => {
   }
 });
 
+/**
+ * Manejador DELETE de /goods. Permite borrar un bien según su ID pasado como un parámetro dinámico.
+ */
 goodRouter.delete('/goods/:id', async (req, res) => {
   try {
     const good = await Good.findByIdAndDelete(req.params.id);

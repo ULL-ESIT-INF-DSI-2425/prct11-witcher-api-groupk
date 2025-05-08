@@ -11,6 +11,10 @@ export interface GoodInterface {
     crowns: number
 }
 
+/**
+ * Esquema GoodSchema. 
+ * Representa toda la información que se ha de almacenar sobre un bien: nombre, descripción, peso y valor en coronas.
+ */
 const GoodSchema = new Schema<GoodInterface>({
     name: {
         type: String,

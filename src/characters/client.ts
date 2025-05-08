@@ -9,6 +9,10 @@ export interface ClientInterface extends PersonInterface {
   race: 'Human' | 'Elf' | 'Dwarf' | 'Wizard'
 }
 
+/**
+ * Esquema ClientSchema. 
+ * Representa toda la información que se ha de almacenar sobre un cliente: nombre, localización y raza.
+ */
 const ClientSchema = new Schema<ClientInterface>({
 	name: {
 		type: String,
