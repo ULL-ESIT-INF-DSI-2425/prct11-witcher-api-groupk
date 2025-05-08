@@ -7,12 +7,13 @@ import { Good } from "../src/items/good.js";
 
 beforeAll(async () => {
     await Transaction.deleteMany();
+    await Stock.deleteMany();
 });
+
+let goodId: string;
 
 describe('/transactions', () => {
   describe('POST /transactions', () => {
-    let goodId: string;
-  
     beforeAll(async () => {
       const goodRes = await request(app)
         .post('/goods')
@@ -64,7 +65,7 @@ describe('/transactions', () => {
   })
     
   
-    test('Crea transacción de cliente correctamente', async () => {
+    test('Crea transacción de mercader correctamente', async () => {
       const res = await request(app)
       .post('/transactions')
       .send({
@@ -75,9 +76,34 @@ describe('/transactions', () => {
         time: '10:30'
       })
       .expect(201);
+
+      const stock = await Stock.findOne({ good: goodId });
+      expect(Number(stock!.toObject().quantity)).toBe(12);
   
       expect(res.body).toHaveProperty('_id');
       expect(res.body.merchant.name).toBe('Gilberto');
+      expect(res.body.goods[0].name).toBe('PocionPrueba');
+      expect(res.body.quantities[0]).toBe(2);
+      expect(res.body.crowns).toBe(20);
+    });
+
+    test('Crea transacción de mercader correctamente', async () => {
+      const res = await request(app)
+      .post('/transactions')
+      .send({
+        client: 'Geralt',
+        goods: ['PocionPrueba'],
+        quantities: [2],
+        date: '2025-05-06',
+        time: '11:30'
+      })
+      .expect(201);
+
+      const stock = await Stock.findOne({ good: goodId });
+      expect(Number(stock!.toObject().quantity)).toBe(10);
+  
+      expect(res.body).toHaveProperty('_id');
+      expect(res.body.client.name).toBe('Geralt');
       expect(res.body.goods[0].name).toBe('PocionPrueba');
       expect(res.body.quantities[0]).toBe(2);
       expect(res.body.crowns).toBe(20);
@@ -179,7 +205,7 @@ describe('/transactions', () => {
   
     test('Devuelve transacciones por mercader', async () => {
       const res = await request(app).get('/transactions?merchant=Gilberto').expect(200);
-      //expect(res.body[0].merchant.name).toBe('Gilberto');
+      expect(res.body[0].merchant.name).toBe('Gilberto');
     });
   
     test('Devuelve error si se combinan client y merchant', async () => {
@@ -235,12 +261,15 @@ describe('/transactions', () => {
         .send({
           merchant: 'Gilberto',
           goods: ['PocionPrueba'],
-          quantities: [1],
+          quantities: [2],
           date: '2025-05-06',
           time: '10:30'
         })
         .expect(201);
       createdTransId = res.body._id;
+
+      const stock = await Stock.findOne({ good: goodId });
+        expect(Number(stock!.toObject().quantity)).toBe(11);
     });
   
     test('Actualiza correctamente los bienes de la transacción con _id válido', async () => {
@@ -257,6 +286,12 @@ describe('/transactions', () => {
           expect(res.body.quantities[0]).toBe(1);
           expect(res.body.goods[0]._id || res.body.goods[0]).toBe(espadaId);
         });
+
+        const stock1 = await Stock.findOne({ good: goodId });
+        expect(Number(stock1!.toObject().quantity)).toBe(9);
+
+        const stock2 = await Stock.findOne({ good: espadaId });
+        expect(Number(stock2!.toObject().quantity)).toBe(3);
     });
   
     test('Devuelve 404 si el bien no existe en stock', async () => {
@@ -331,6 +366,9 @@ describe('/transactions', () => {
             const res = await request(app)
               .delete(`/transactions/${createdTransId}`)
               .expect(200);
+
+            const stock = await Stock.findOne({ good: goodId });
+            expect(Number(stock!.toObject().quantity)).toBe(9);
           });
   
   

@@ -174,7 +174,7 @@ transactionRouter.get('/transactions', async (req, res) => {
 
             if (merchant) {
                 const transactions = await Transaction.find({ merchant: merchant.toObject()._id }).populate({
-                    path: "client",
+                    path: "merchant",
                     select: ["name"]
                 }).populate({
                     path: "goods",
