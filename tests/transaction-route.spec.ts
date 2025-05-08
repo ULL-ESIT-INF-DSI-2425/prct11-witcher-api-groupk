@@ -398,9 +398,9 @@ describe('/transactions', () => {
     });
   
     test('Devuelve 500 si el ID es inválido', async () => {
-            await request(app)
-              .delete('/transactions/invalid-id')
-              .expect(500);
-          });
-        });
+      await request(app)
+        .delete('/transactions/invalid-id')
+        .expect(500);
+    });
+  });
 });
